@@ -11,23 +11,22 @@ importers:
       '@types/node':
         specifier: ^26.4.1
         version: 26.4.1
+      tsdown:
+        specifier: ^0.23.0
+        version: 0.23.0(typescript@7.0.2)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
 
-  apps/demo:
+  apps/demo: {}
+
+  packages/agent: {}
+
+  packages/openai-provider:
     dependencies:
       openai:
         specifier: ^7.10.0
         version: 7.10.0
-    devDependencies:
-      tsdown:
-        specifier: ^0.23.0
-        version: 0.23.0(typescript@7.0.2)
-
-  packages/agent: {}
-
-  packages/openai-provider: {}
 
 packages:
 

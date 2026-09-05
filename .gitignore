@@ -136,4 +136,4 @@ dist
 .pnp.*
 
 
-apps/demo/src/config.ts
+packages/openai-provider/src/config.ts
