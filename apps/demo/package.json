@@ -12,5 +12,8 @@
   "type": "module",
   "devDependencies": {
     "tsdown": "^0.23.0"
+  },
+  "dependencies": {
+    "openai": "^7.10.0"
   }
 }
