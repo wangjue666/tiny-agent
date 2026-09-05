@@ -18,21 +18,42 @@ async function conversation({
     messages,
     model: "deepseek-v4-flash",
     thinking: {
-      type: "disabled",
+      type: "enabled",
     },
+    reasoning_effort: "low",
+    tools: [
+      {
+        type: "function",
+        function: {
+          name: "get_weather",
+          description:
+            "Get weather of a location, the user should supply a location first.",
+          parameters: {
+            type: "object",
+            properties: {
+              location: {
+                type: "string",
+                description: "The city and state, e.g. San Francisco, CA",
+              },
+            },
+            required: ["location"],
+          },
+        },
+      },
+    ],
   };
   const completion = await openai.chat.completions.create(sendParams);
   console.log("completion", JSON.stringify(completion, null, 2));
   if (!completion || !completion.choices || completion.choices.length === 0) {
     throw new Error("No choices returned from OpenAI API");
   }
-  return completion.choices[0]?.message.content;
+  return completion.choices[0]?.message;
 }
 
 console.log(
   conversation({
     promote:
       "You are a helpful assistant that answers questions about the DeepSeek API.",
-    question: "你好呀",
+    question: "今天北京天气如何",
   }),
 );
