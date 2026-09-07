@@ -11,6 +11,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "openai": "^7.10.0"
+    "openai": "^7.10.0",
+    "@tiny-agent/agent": "workspace:*"
   }
 }

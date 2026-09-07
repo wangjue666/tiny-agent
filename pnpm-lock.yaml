@@ -24,6 +24,9 @@ importers:
 
   packages/openai-provider:
     dependencies:
+      '@tiny-agent/agent':
+        specifier: workspace:*
+        version: link:../agent
       openai:
         specifier: ^7.10.0
         version: 7.10.0
