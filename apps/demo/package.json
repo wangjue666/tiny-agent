@@ -4,10 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsdown"
+    "build": "tsdown",
+    "dev": "tsdown --watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@tiny-agent/agent": "workspace:*",
+    "@tiny-agent/openai-provider": "workspace:*"
+  }
 }

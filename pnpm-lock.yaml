@@ -18,7 +18,14 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
-  apps/demo: {}
+  apps/demo:
+    dependencies:
+      '@tiny-agent/agent':
+        specifier: workspace:*
+        version: link:../../packages/agent
+      '@tiny-agent/openai-provider':
+        specifier: workspace:*
+        version: link:../../packages/openai-provider
 
   packages/agent: {}
 

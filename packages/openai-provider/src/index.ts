@@ -1,59 +1,100 @@
 import OpenAI from "openai";
-import { openApiConfig } from "./config";
+import type {
+  AssistantMessage,
+  Message,
+  Model,
+  ToolDefinition,
+} from "@tiny-agent/agent";
+import { openApiConfig, openApiModel } from "./config";
 
-const openai = new OpenAI(openApiConfig);
+type OpenAIModelOptions = {
+  model?: string;
+  client?: OpenAI;
+};
 
-async function conversation({
-  promote,
-  question,
-}: {
-  question?: string;
-  promote: string;
-}) {
-  const messages = [{ role: "system", content: promote }];
-  if (question) {
-    messages.push({ role: "user", content: question });
-  }
-  const sendParams: any = {
-    messages,
-    model: "deepseek-v4-flash",
-    thinking: {
-      type: "enabled",
-    },
-    reasoning_effort: "low",
-    tools: [
-      {
-        type: "function",
-        function: {
-          name: "get_weather",
-          description:
-            "Get weather of a location, the user should supply a location first.",
-          parameters: {
-            type: "object",
-            properties: {
-              location: {
-                type: "string",
-                description: "The city and state, e.g. San Francisco, CA",
-              },
+function toOpenAIMessages(
+  systemPrompt: string,
+  messages: Message[],
+): unknown[] {
+  return [
+    { role: "system", content: systemPrompt },
+    ...messages.map((message) => {
+      if (message.role === "tool") {
+        return {
+          role: "tool",
+          tool_call_id: message.toolCallId,
+          content: message.content,
+        };
+      }
+
+      if (message.role === "assistant") {
+        return {
+          role: "assistant",
+          content: message.content,
+          tool_calls: message.toolCalls.map((call) => ({
+            id: call.id,
+            type: "function",
+            function: {
+              name: call.name,
+              arguments: JSON.stringify(call.arguments),
             },
-            required: ["location"],
-          },
-        },
-      },
-    ],
-  };
-  const completion = await openai.chat.completions.create(sendParams);
-  console.log("completion", JSON.stringify(completion, null, 2));
-  if (!completion || !completion.choices || completion.choices.length === 0) {
-    throw new Error("No choices returned from OpenAI API");
-  }
-  return completion.choices[0]?.message;
+          })),
+        };
+      }
+
+      return { role: "user", content: message.content };
+    }),
+  ];
 }
 
-console.log(
-  conversation({
-    promote:
-      "You are a helpful assistant that answers questions about the DeepSeek API.",
-    question: "今天北京天气如何",
-  }),
-);
+function toOpenAITools(tools: ToolDefinition[]): unknown[] {
+  return tools.map((tool) => ({
+    type: "function",
+    function: {
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters,
+    },
+  }));
+}
+
+export function createOpenAIModel(options: OpenAIModelOptions = {}): Model {
+  const client = options.client ?? new OpenAI(openApiConfig);
+  const model = options.model ?? openApiModel;
+
+  return {
+    async generate(input): Promise<AssistantMessage> {
+      const completion = await client.chat.completions.create({
+        model,
+        messages: toOpenAIMessages(input.systemPrompt, input.messages) as never,
+        tools: toOpenAITools(input.tools) as never,
+      });
+      const message = completion.choices[0]?.message;
+
+      if (!message) {
+        throw new Error("OpenAI returned no assistant message");
+      }
+
+      return {
+        role: "assistant",
+        content: message.content ?? "",
+        toolCalls: (message.tool_calls ?? []).flatMap((call) => {
+          if (call.type !== "function") {
+            return [];
+          }
+
+          let args: unknown = call.function.arguments;
+          try {
+            args = JSON.parse(call.function.arguments);
+          } catch {
+            // Keep malformed arguments as text so the registered tool can report the error.
+          }
+
+          return [{ id: call.id, name: call.function.name, arguments: args }];
+        }),
+      };
+    },
+  };
+}
+
+export { openApiConfig, openApiModel } from "./config";

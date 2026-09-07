@@ -2,7 +2,7 @@
   "name": "@tiny-agent/agent",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.mjs",
   "type": "module",
   "types": "dist/index.d.mts",
   "module": "dist/index.mjs",
