@@ -96,5 +96,3 @@ export function createOpenAIModel(options: OpenAIModelOptions = {}): Model {
     },
   };
 }
-
-export { openApiConfig, openApiModel } from "./config";
